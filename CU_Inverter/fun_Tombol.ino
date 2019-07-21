@@ -133,10 +133,10 @@ void setting_tombol() {
   while (check == 2) {
     check_button(2);
   }
-  while (check == 3) {
-    check_button(3);
-  }
-  while (check == 13) {
+//  while (check == 3) {
+//    check_button(3);
+//  }
+  while (check == 14) {
     Serial.println("keluar");
     latch = 0;
     check = 99;

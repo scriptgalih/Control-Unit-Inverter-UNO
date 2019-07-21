@@ -24,11 +24,14 @@ const long interval = 500;
 int lfSin ;
 int lfCar ;
 void setup() {
-  pinMode(12,1);
-  digitalWrite(12,1);
-  // put your setup code here, to run once:
-  Serial.begin(9600);
+  lcd.begin();
+  lcd.clear();
+  lcdprint(0, 0, "Loading . . .");
+  pinMode(12, 1);
+  inverter_mati();
+  Serial.begin(115200);
   SerialUNO.begin(4800);
+  delay(500);
   lfSin = EEPROM.read(eFsin);
   lfCar = (EEPROM.read(eHFcar) * 255) + EEPROM.read(eLFcar);
   SerialUNO.print("@"); delay(5);
@@ -45,7 +48,7 @@ void setup() {
   SerialUNO.print(lfCar); delay(5);
   SerialUNO.print("#");
 
-  lcd.begin();
+
   lcdprint(0, 0, "-INVERTER AC 3 FASA-");
   lcdprint(0, 1, "GALIH SETYAWAN");
   lcdprint(0, 2, "SEKOLAH VOKASI");
@@ -109,11 +112,9 @@ void loop() {
 
 
   while (check == 10) {
-    if(sInv == 1){
+    if (sInv == 1) {
       break;
     }
-    digitalWrite(12,1);
-    
     Serial.print("INVERTER AKTIF . . .");
     SerialUNO.print("@"); delay(5);
     SerialUNO.print("0"); delay(5);
@@ -125,10 +126,13 @@ void loop() {
     intro();
     check = 99;
     delay(100);
-    digitalWrite(12,0);
+    inverter_hidup();
   }
   while (check == 11) {
-    digitalWrite(12,1);
+    if (sInv == 0) {
+      break;
+    }
+    inverter_mati();
     Serial.print("INVERTER TIDAK AKTIF . . .");
     SerialUNO.print("@"); delay(5);
     SerialUNO.print("0"); delay(5);
@@ -140,7 +144,26 @@ void loop() {
     intro();
     check = 99;
   }
-  if (check == 12 && sInv == 0) {
+
+  if (check == 12 || check == 13) {
+    inverter_mati();
+    int new_sin = EEPROM.read(eFsin);
+    if (check == 12) {
+      if ( new_sin < 100) {
+        new_sin++;
+        SerialUNO.print("+");
+      }
+    } else if (check == 13) {
+      if ( new_sin > 15) {
+        new_sin--;
+        SerialUNO.print("-");
+      }
+    }
+    EEPROM.update(eFsin, new_sin);
+    tampil_lcd = 0;
+    inverter_hidup();
+  }
+  if (check == 15 && sInv == 0) {
     Serial.println("masuk menu");
     latch = 1;
     tampil_lcd = 0;
@@ -150,7 +173,7 @@ void loop() {
         lcdprint(0, 0, "MENU");
         lcdprint(0, 1, "1. Set freq Sinyal");
         lcdprint(0, 2, "2. Set freq Carrier");
-//        lcdprint(0, 3, "3. Set freq Amp");
+        //        lcdprint(0, 3, "3. Set freq Amp");
         tampil_lcd = 1;
       }
       check = tombol();
@@ -161,4 +184,10 @@ void loop() {
   }
 }
 
+void inverter_mati() {
+  digitalWrite(12, 1);
+}
 
+void inverter_hidup() {
+  digitalWrite(12, 0);
+}
