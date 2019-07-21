@@ -38,6 +38,7 @@ void check_button(int ax) {
         if (idx <= 0)idx = 0;
         cek_tombol = 99;
       } else if (cek_tombol == 11) {
+        digitalWrite(12,1);
         SerialUNO.print("@"); delay(5);
 
 
@@ -71,6 +72,8 @@ void check_button(int ax) {
         if (idx >= 3) {
           gabung += 1;
         }
+        delay(10);
+        digitalWrite(12,0);
         switch (ax) {
           case 1:
             EEPROM.update(eFsin, gabung);

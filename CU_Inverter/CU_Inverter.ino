@@ -13,14 +13,19 @@
 
 int sInv = 0;
 SoftwareSerial SerialUNO(10, 11); // RX, TX
-LiquidCrystal_I2C lcd(0x3F, 20, 4);
-int r[4] = {A1, 9, A2, 8};
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+int r[4] = {A1, 9, A2, 8}; //5x4
 int c[4] = { 4, 3, 5, 2};
+
+//int r[4] = {8, A2, 9, A1}; //4x4
+//int c[4] = { 4, 3, 5, 2};
 unsigned long previousMillis = 0;
 const long interval = 500;
 int lfSin ;
 int lfCar ;
 void setup() {
+  pinMode(12,1);
+  digitalWrite(12,1);
   // put your setup code here, to run once:
   Serial.begin(9600);
   SerialUNO.begin(4800);
@@ -87,6 +92,7 @@ void loop() {
     int lfSin = EEPROM.read(eFsin);
     int lfCar = (EEPROM.read(eHFcar) * 255) + EEPROM.read(eLFcar);
     lcdprint(0, 0, "INVERTER");
+    delay(10);
     if (sInv == 0) {
       lcd.print(" OFF ");
     } else {
@@ -103,6 +109,11 @@ void loop() {
 
 
   while (check == 10) {
+    if(sInv == 1){
+      break;
+    }
+    digitalWrite(12,1);
+    
     Serial.print("INVERTER AKTIF . . .");
     SerialUNO.print("@"); delay(5);
     SerialUNO.print("0"); delay(5);
@@ -113,8 +124,11 @@ void loop() {
     sInv = 1;
     intro();
     check = 99;
+    delay(100);
+    digitalWrite(12,0);
   }
   while (check == 11) {
+    digitalWrite(12,1);
     Serial.print("INVERTER TIDAK AKTIF . . .");
     SerialUNO.print("@"); delay(5);
     SerialUNO.print("0"); delay(5);
@@ -126,7 +140,7 @@ void loop() {
     intro();
     check = 99;
   }
-  if (check == 12) {
+  if (check == 12 && sInv == 0) {
     Serial.println("masuk menu");
     latch = 1;
     tampil_lcd = 0;
@@ -136,7 +150,7 @@ void loop() {
         lcdprint(0, 0, "MENU");
         lcdprint(0, 1, "1. Set freq Sinyal");
         lcdprint(0, 2, "2. Set freq Carrier");
-        lcdprint(0, 3, "3. Set freq Amp");
+//        lcdprint(0, 3, "3. Set freq Amp");
         tampil_lcd = 1;
       }
       check = tombol();
